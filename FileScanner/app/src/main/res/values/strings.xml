@@ -8,7 +8,6 @@
     <string name="stop">Stop</string>
     <string name="title_activity_sdcard">SD Card Scanner</string>
 
-    <string name="none">None</string>
     <string name="avg_file_size">Average File Size</string>
     <string name="top_10_largest_files">Top 10 LARGEST FILES:</string>
     <string name="top_5_frequent_extensions">Top 5 File FREQUENCIES</string>
@@ -19,6 +18,7 @@
     <string name="share_results_message">Average File Size: %1$s\n\nTop 10 LARGEST FILES:\n%2$s\n\nTop 5 File FREQUENCIES:\n%3$s</string>
 
     <string name="enable_permission">Please enable the permissions from settings.</string>
-    <string name="preparing_to_cancel">Preparing to cancel</string>
+    <string name="preparing_to_cancel">Preparing to cancel.</string>
+    <string name="unable_to_read_external_storage">Unable to read external storage.</string>
 
 </resources>

@@ -60,9 +60,15 @@ public class ScanResultsFragment extends Fragment {
     }
 
     public void startFileScan() {
-        fileScannerTask = new FileScannerTask();
-        fileScannerTask.execute();
-        running = true;
+        if(AppUtils.isExternalStorageReadable()) {
+            fileScannerTask = new FileScannerTask();
+            fileScannerTask.execute();
+            running = true;
+        }else {
+            if(mListener != null){
+                mListener.showError();
+            }
+        }
     }
 
     public void cancelFileScan(){
@@ -142,5 +148,6 @@ public class ScanResultsFragment extends Fragment {
         void onPreScan();
         void onPostScan(ScanResults results);
         void onCancelled();
+        void showError();
     }
 }

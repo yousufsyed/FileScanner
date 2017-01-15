@@ -177,7 +177,12 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         Log.v("cancelled", "cancelled");
         fileScannerBinding.progressTitle.setText(getString(R.string.file_scan_in_progress));
         showMessage(getString(R.string.scan_cancelled));
-        removeNotification();
+    }
+
+    @Override
+    public void showError() {
+        showProgress(false);
+        showMessage(getString(R.string.unable_to_read_external_storage));
     }
 
     private void startFileScan() {
