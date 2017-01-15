@@ -14,9 +14,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 /**
- * Created by u471637 on 1/14/17.
+ * @author Yousuf S. on 1/14/17.
  */
 
 public class SectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -46,6 +45,10 @@ public class SectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void addHeader(String title) {
         mListData.add(new ListData(title, null));
         mHeaderSet.add(mListData.size() - 1);
+    }
+
+    private boolean isHeader(int position) {
+        return mHeaderSet.contains(position);
     }
 
     @Override
@@ -83,13 +86,8 @@ public class SectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return isHeader(position) ? TYPE_HEADER : TYPE_ITEM;
     }
 
-    private boolean isHeader(int position) {
-        return mHeaderSet.contains(position);
-    }
-
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView mName, mCount;
-
         ItemViewHolder(View view) {
             super(view);
             mName = (TextView) view.findViewById(R.id.name);
@@ -99,7 +97,6 @@ public class SectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private static class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView mTitle;
-
         HeaderViewHolder(View view) {
             super(view);
             mTitle = (TextView) view.findViewById(R.id.title);

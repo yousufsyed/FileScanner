@@ -1,15 +1,10 @@
 package com.yousuf.android.sample.filescanner.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.yousuf.android.sample.filescanner.utils.AppUtils;
-
 import java.io.Serializable;
-import java.util.Locale;
 
 /**
- * Created by u471637 on 1/12/17.
+ * @author Yousuf S. on 1/12/17.
  */
 
 public class MFile implements Comparable<MFile>, Serializable {
@@ -24,10 +19,10 @@ public class MFile implements Comparable<MFile>, Serializable {
     }
 
     @Override
-    public int compareTo(MFile o) {
-        if (mSize > o.mSize) {
+    public int compareTo(MFile fileInfo) {
+        if (mSize > fileInfo.mSize) {
             return 1;
-        } else if (mSize < o.mSize) {
+        } else if (mSize < fileInfo.mSize) {
             return -1;
         }
         return 0;

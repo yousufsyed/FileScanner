@@ -7,14 +7,15 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
-
 /**
- * Created by u471637 on 1/14/17.
+ * @author Yousuf S. on 1/14/17.
  */
 
 public class PermissionsUtil {
 
     private static String WRITE_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+    public static String[] PERMISSIONS = new String[]{WRITE_PERMISSION};
 
     public static boolean isPermissionRequired(Context ctx) {
         return (ContextCompat.checkSelfPermission(ctx, WRITE_PERMISSION)) != PackageManager.PERMISSION_GRANTED;

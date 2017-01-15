@@ -1,7 +1,7 @@
 package com.yousuf.android.sample.filescanner.model;
 
 /**
- * Created by u471637 on 1/14/17.
+ * @author Yousuf S. on 1/14/17.
  */
 
 public class ListData {

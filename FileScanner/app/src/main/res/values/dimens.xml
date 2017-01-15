@@ -1,10 +1,12 @@
 <resources>
-    <dimen name="toolbar_height">72dp</dimen>
 
     <dimen name="text_normal_15">15sp</dimen>
     <dimen name="text_normal_17">17sp</dimen>
 
+
     <dimen name="padding_medium">15dp</dimen>
+
+    <dimen name="margin_normal">10dp</dimen>
     <dimen name="margin_medium">15dp</dimen>
 
 </resources>

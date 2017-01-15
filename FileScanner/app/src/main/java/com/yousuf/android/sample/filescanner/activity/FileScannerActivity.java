@@ -1,22 +1,11 @@
 package com.yousuf.android.sample.filescanner.activity;
 
-import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,7 +13,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.yousuf.android.sample.filescanner.R;
 import com.yousuf.android.sample.filescanner.adapter.SectionAdapter;
@@ -36,6 +24,10 @@ import com.yousuf.android.sample.filescanner.utils.AppUtils;
 import com.yousuf.android.sample.filescanner.utils.PermissionsUtil;
 
 import java.util.Map;
+
+/**
+ * @author Yousuf S. on 1/12/17.
+ */
 
 public class FileScannerActivity extends AppCompatActivity implements ScanResultsFragment.OnFileScanListener {
 
@@ -57,13 +49,11 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         fileScannerBinding.scanResults.setLayoutManager(new LinearLayoutManager(this));
         fileScannerBinding.scanResults.setAdapter(new SectionAdapter());
 
-
-        FragmentManager fm = getSupportFragmentManager();
-
-        scanResultsFragment = (ScanResultsFragment) fm.findFragmentByTag(SCAN_RESULTS_FRAGMENT_KEY);
+        scanResultsFragment = (ScanResultsFragment) getSupportFragmentManager().findFragmentByTag(SCAN_RESULTS_FRAGMENT_KEY);
         if (scanResultsFragment == null) {
             scanResultsFragment = new ScanResultsFragment();
-            fm.beginTransaction().add(scanResultsFragment, SCAN_RESULTS_FRAGMENT_KEY).commit();
+            getSupportFragmentManager().beginTransaction()
+                    .add(scanResultsFragment, SCAN_RESULTS_FRAGMENT_KEY).commit();
         }
     }
 
@@ -116,20 +106,18 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         scanResultsFragment.cancelFileScan();
+        AppUtils.removeNotification(getApplicationContext(),NOTIFICATION_ID);
+        super.onBackPressed();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case REQUEST_PERMISSIONS_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startFileScan();
-                } else {
-                    showEmptyMessage(getString(R.string.enable_permission));
+                if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    showMessage(getString(R.string.enable_permission));
                 }
-
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
@@ -137,7 +125,7 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
 
     public void onStartButtonClicked() {
         if (PermissionsUtil.isPermissionRequired(this)) {
-            Toast.makeText(this, "Storage Permission required", Toast.LENGTH_SHORT).show();
+            showMessage("Storage Permission required");
         } else {
             startFileScan();
         }
@@ -175,8 +163,8 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
     public void onCancelled() {
         showProgress(false);
         Log.v("cancelled", "cancelled");
-        fileScannerBinding.progressTitle.setText(getString(R.string.file_scan_in_progress));
         showMessage(getString(R.string.scan_cancelled));
+        fileScannerBinding.progressTitle.setText(getString(R.string.file_scan_in_progress));
     }
 
     @Override
@@ -197,19 +185,24 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         if (PermissionsUtil.isRationaleRequired(this)) { // user already denied
             showExplanationDialog();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_CODE);
+            displaySystemPermissionDialog();
         }
+    }
+
+    private void displaySystemPermissionDialog() {
+        ActivityCompat.requestPermissions(this, PermissionsUtil.PERMISSIONS, REQUEST_PERMISSIONS_CODE);
     }
 
     private void updateScanResults() {
         if (mScanResults != null && !mScanResults.isEmpty()) {
             mScanResults.setResultsAsText(getString(R.string.share_results_message,
+                    mScanResults.getTotalFilesScanned(),
                     mScanResults.getAvgFileSize(),
                     mScanResults.getLargestFilesInfo(),
                     mScanResults.getFrequentExtensionsInfo()));
             updateResultsAdapter();
         } else {
-            showEmptyMessage(getString(R.string.empty_sdcard));
+            showMessage(getString(R.string.empty_sdcard));
         }
         invalidateOptionsMenu();
     }
@@ -217,27 +210,26 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
     private void updateResultsAdapter() {
         SectionAdapter adapter = (SectionAdapter) fileScannerBinding.scanResults.getAdapter();
         adapter.reset();
-        adapter.addHeader(getString(R.string.avg_file_size));
+        adapter.addHeader(getString(R.string.scan_summary));
+        adapter.addItem(getString(R.string.total_files_scanned), mScanResults.getTotalFilesScanned());
         adapter.addItem(getString(R.string.avg_file_size), mScanResults.getAvgFileSize());
+        addLargestFilesToAdapter(adapter);
+        addFrequenciesToAdapter(adapter);
+        fileScannerBinding.scanResults.setVisibility(View.VISIBLE);
+    }
+
+    private void addLargestFilesToAdapter(SectionAdapter adapter) {
         adapter.addHeader(getString(R.string.top_10_largest_files));
         for (MFile file : mScanResults.getLargestFiles()) {
             adapter.addItem(file.getName(), file.getSize());
         }
+    }
 
+    private void addFrequenciesToAdapter(SectionAdapter adapter) {
         adapter.addHeader(getString(R.string.top_5_frequent_extensions));
         for (Map.Entry<String, Integer> entry : mScanResults.getFrequencies()) {
             adapter.addItem(entry.getKey(), String.valueOf(entry.getValue()));
         }
-
-        fileScannerBinding.emptyMessage.setVisibility(View.GONE);
-        fileScannerBinding.scanResults.setVisibility(View.VISIBLE);
-
-    }
-
-    private void showEmptyMessage(String message) {
-        fileScannerBinding.emptyMessage.setText(message);
-        fileScannerBinding.emptyMessage.setVisibility(View.VISIBLE);
-        fileScannerBinding.scanResults.setVisibility(View.GONE);
     }
 
     private void showExplanationDialog() {
@@ -247,8 +239,7 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        ActivityCompat.requestPermissions(FileScannerActivity.this,
-                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_CODE);
+                        displaySystemPermissionDialog();
                     }
                 }).create();
         dlg.show();
@@ -259,46 +250,23 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         fileScannerBinding.actionStart.setEnabled(!showProgress);
         fileScannerBinding.actionStop.setEnabled(showProgress);
         if (showProgress) {
-            fileScannerBinding.emptyMessage.setText("");
             showOnGoingNotification();
         } else {
-            removeNotification();
+            AppUtils.removeNotification(getApplicationContext(), NOTIFICATION_ID);
         }
     }
 
     private void showMessage(String message) {
-        Snackbar snackbar = Snackbar.make(fileScannerBinding.mainContainer, message, Snackbar.LENGTH_LONG);
-        snackbar.show();
+        Snackbar.make(fileScannerBinding.mainContainer, message, Snackbar.LENGTH_LONG).show();
     }
-
 
     private void showOnGoingNotification() {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle(getString(R.string.app_name))
-                        .setContentText(getString(R.string.file_scan_in_progress));
-
-        Intent resultIntent = new Intent(this, FileScannerActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(FileScannerActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Notification notification = mBuilder.build();
-        notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mNotificationManager.notify(NOTIFICATION_ID, notification);
+        AppUtils.showOnGoingNotification(getApplicationContext(),
+                getString(R.string.app_name),
+                getString(R.string.file_scan_in_progress),
+                true,
+                NOTIFICATION_ID);
     }
-
-
-    private void removeNotification() {
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(NOTIFICATION_ID);
-    }
-
 
 }
 

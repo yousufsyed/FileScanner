@@ -1,6 +1,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+
         <variable
             name="handlers"
             type="com.yousuf.android.sample.filescanner.activity.FileScannerActivity" />
@@ -15,17 +16,8 @@
             android:id="@+id/scan_results"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/action_tabs"
-            android:layout_alignParentTop="true"
-            />
-
-        <TextView
-            android:id="@+id/empty_message"
-            android:visibility="gone"
-            style="@style/TextStyle.Message"
-            android:layout_centerInParent="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_above="@+id/action_start"
+            android:layout_alignParentTop="true" />
 
         <LinearLayout
             android:id="@+id/progress_container"
@@ -56,36 +48,25 @@
 
         </LinearLayout>
 
-
-        <RelativeLayout
-            android:id="@+id/action_tabs"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
+        <Button
+            android:id="@+id/action_start"
+            style="@style/GlobalButton.Action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="@dimen/padding_medium"
-            android:paddingRight="@dimen/padding_medium">
+            android:layout_alignParentLeft="true"
+            android:onClick="@{() -> handlers.onStartButtonClicked()}"
+            android:text="@string/start" />
 
-            <Button
-                android:id="@+id/action_start"
-                style="@style/GlobalButton.Action"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:onClick="@{() -> handlers.onStartButtonClicked()}"
-                android:text="@string/start" />
-
-            <Button
-                android:id="@+id/action_stop"
-                style="@style/GlobalButton.Action"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_alignTop="@+id/action_start"
-                android:onClick="@{() -> handlers.onStopButtonClicked()}"
-                android:text="@string/stop" />
-
-        </RelativeLayout>
+        <Button
+            android:id="@+id/action_stop"
+            style="@style/GlobalButton.Action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:onClick="@{() -> handlers.onStopButtonClicked()}"
+            android:text="@string/stop" />
 
     </RelativeLayout>
 

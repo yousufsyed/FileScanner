@@ -32,16 +32,18 @@ public class ScanResults implements Parcelable {
 
     private String shareResults = "none";
 
-    private String mAverageFileSize ="";
+    private String mAverageFileSize = "";
 
     //Temp local store:
+    //Make sure to clear this data after result extraction.
     private PriorityQueue<MFile> mTempFileQueue;
 
     private HashMap<String, Integer> mTempFrequencyMap;
 
     private long avgSize;
 
-    private long totalFiles=0;
+    private long totalFiles = 0;
+    //Temp local store:
 
     public ScanResults() {
         mTempFileQueue = new PriorityQueue<>();
@@ -53,8 +55,8 @@ public class ScanResults implements Parcelable {
     /**
      * Add file details to data store.
      *
-     * @param name file title
-     * @param size file size
+     * @param name      file title
+     * @param size      file size
      * @param extension file extension
      */
     public void addScanResult(String name, long size, String extension) {
@@ -74,12 +76,12 @@ public class ScanResults implements Parcelable {
      * Extract results from temp data stores and save them in the appropriate data structures.
      */
     public void extractResults() {
-        if(mTempFileQueue.isEmpty())
+        if (mTempFileQueue.isEmpty())
             return;
 
         avgSize = avgSize / totalFiles;
 
-        Log.d("SCAN_RESULT_ADDED", "total files: " +  totalFiles);
+        Log.d("SCAN_RESULT_ADDED", "total files: " + totalFiles);
 
         mAverageFileSize = AppUtils.getConvertedSize(avgSize);
         saveLargestFilesInfo(mTempFileQueue);
@@ -106,10 +108,11 @@ public class ScanResults implements Parcelable {
             return;
         }
 
+        // Use List instead of set to sort the values
         List<Map.Entry<String, Integer>> list = new ArrayList<>(frequencyMap.entrySet());
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
-            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
-                return (o2.getValue()).compareTo(o1.getValue());
+            public int compare(Map.Entry<String, Integer> entry1, Map.Entry<String, Integer> entry2) {
+                return (entry2.getValue()).compareTo(entry1.getValue());
             }
         });
 
@@ -142,8 +145,13 @@ public class ScanResults implements Parcelable {
         frequencyMap.put(extension, ++count);
     }
 
+    public String getTotalFilesScanned(){
+        return String.valueOf(totalFiles);
+    }
+
     /**
-     * Get Average file size by
+     * Get Average file size
+     *
      * @return average file size
      */
     public String getAvgFileSize() {
@@ -152,14 +160,16 @@ public class ScanResults implements Parcelable {
 
     /**
      * Get list of largest files.
+     *
      * @return set of MFiles
      */
-    public Set<MFile>  getLargestFiles(){
+    public Set<MFile> getLargestFiles() {
         return mLargestFiles;
     }
 
     /**
      * Get largest files info as String
+     *
      * @return string will 10 most largest files.
      */
     public String getLargestFilesInfo() {
@@ -176,7 +186,8 @@ public class ScanResults implements Parcelable {
     }
 
     /**
-     * Get most frequent file extension info as String
+     * Get most frequent file extension info as string.
+     *
      * @return string will 5 most frequent file extensions.
      */
     public String getFrequentExtensionsInfo() {
@@ -193,26 +204,39 @@ public class ScanResults implements Parcelable {
     }
 
     /**
-     * Get most frequent extensions
+     * Get most frequent extensions.
+     *
      * @return set of frequent file extensions
      */
-    public Set<Map.Entry<String,Integer>> getFrequencies(){
+    public Set<Map.Entry<String, Integer>> getFrequencies() {
         return mFrequencyMap.entrySet();
     }
 
+    /**
+     * Reset global data store.
+     */
     public void reset() {
         mAverageFileSize = "";
-        shareResults ="";
+        shareResults = "";
+        totalFiles = 0;
         mFrequencyMap.clear();
         mLargestFiles.clear();
     }
 
-
+    /**
+     * Set text result as test for ease of sharing.
+     *
+     * @param resultsAsText structured result as string
+     */
     public void setResultsAsText(String resultsAsText) {
         shareResults = resultsAsText;
     }
 
-
+    /**
+     * Get structured result for sharing.
+     *
+     * @return structured result as string
+     */
     public String getResultsAsText() {
         return shareResults;
     }
@@ -220,7 +244,7 @@ public class ScanResults implements Parcelable {
     /**
      * Check to see if files are empty or not.
      *
-     * @return
+     * @return flag to know whether results are available or not
      */
     public boolean isEmpty() {
         return (mFrequencyMap == null || mFrequencyMap.isEmpty() || mLargestFiles == null || mLargestFiles.isEmpty());
@@ -234,38 +258,25 @@ public class ScanResults implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.avgSize);
-        dest.writeSerializable(this.mLargestFiles);
-        dest.writeSerializable(this.mFrequencyMap);
         dest.writeString(this.shareResults);
         dest.writeString(this.mAverageFileSize);
-        dest.writeSerializable(this.mTempFileQueue);
         dest.writeInt(this.mTempFrequencyMap.size());
+        dest.writeSerializable(this.mLargestFiles);
+        dest.writeSerializable(this.mTempFileQueue);
         dest.writeMap(mTempFrequencyMap);
-
-//        for (Map.Entry<String, Integer> entry : this.mTempFrequencyMap.entrySet()) {
-//            dest.writeString(entry.getKey());
-//            dest.writeValue(entry.getValue());
-//        }
+        dest.writeSerializable(this.mFrequencyMap);
     }
 
     protected ScanResults(Parcel in) {
         this();
         this.avgSize = in.readLong();
-        this.mLargestFiles = (TreeSet<MFile>) in.readSerializable();
-        this.mFrequencyMap = (LinkedHashMap<String, Integer>) in.readSerializable();
         this.shareResults = in.readString();
         this.mAverageFileSize = in.readString();
-        this.mTempFileQueue = (PriorityQueue<MFile>) in.readSerializable();
         int mTempFrequencyMapSize = in.readInt();
+        this.mLargestFiles = (TreeSet<MFile>) in.readSerializable();
+        this.mTempFileQueue = (PriorityQueue<MFile>) in.readSerializable();
         this.mTempFrequencyMap = in.readHashMap(HashMap.class.getClassLoader());
-
-//              //  new HashMap<String, Integer>(mTempFrequencyMapSize);
-//
-//        for (int i = 0; i < mTempFrequencyMapSize; i++) {
-//            String key = in.readString();
-//            Integer value = (Integer) in.readValue(Integer.class.getClassLoader());
-//            this.mTempFrequencyMap.put(key, value);
-//        }
+        this.mFrequencyMap = (LinkedHashMap<String, Integer>) in.readSerializable();
     }
 
     public static final Parcelable.Creator<ScanResults> CREATOR = new Parcelable.Creator<ScanResults>() {

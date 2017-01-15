@@ -7,15 +7,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import com.yousuf.android.sample.filescanner.R;
 import com.yousuf.android.sample.filescanner.model.ScanResults;
 import com.yousuf.android.sample.filescanner.utils.AppUtils;
 
 import java.io.File;
+
+/**
+ * @author Yousuf S. on 1/14/17.
+ */
 
 public class ScanResultsFragment extends Fragment {
 
@@ -134,10 +134,8 @@ public class ScanResultsFragment extends Fragment {
                     if (file.isDirectory()) {
                         getFile(file);
                     } else {
-                        long size = file.length();
-                        String title = file.getName();
-                        String ext = AppUtils.getExtension(title);
-                        mScanResults.addScanResult(title, size, ext);
+                        String ext = AppUtils.getExtension(file.getName());
+                        mScanResults.addScanResult(file.getName(), file.length(), ext);
                     }
                 }
             }

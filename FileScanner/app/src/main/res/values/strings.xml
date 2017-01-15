@@ -6,16 +6,20 @@
 
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="title_activity_sdcard">SD Card Scanner</string>
 
-    <string name="avg_file_size">Average File Size</string>
-    <string name="top_10_largest_files">Top 10 LARGEST FILES:</string>
-    <string name="top_5_frequent_extensions">Top 5 File FREQUENCIES</string>
+    <string name="scan_summary">SD Card Scan Summary</string>
+    <string name="total_files_scanned">Total Files Scanned:</string>
+    <string name="avg_file_size">Average File Size:</string>
+    <string name="top_10_largest_files">Top 10 Largest Files:</string>
+    <string name="top_5_frequent_extensions">Top 5 File Frequencies</string>
 
     <string name="action_share">Share</string>
     <string name="share_title">Share scan results via:</string>
     <string name="share_subject">SD Card Scan results</string>
-    <string name="share_results_message">Average File Size: %1$s\n\nTop 10 LARGEST FILES:\n%2$s\n\nTop 5 File FREQUENCIES:\n%3$s</string>
+    <string name="share_results_message">Total Files Scanned: %1$s\n\n
+        Average File Size: %2$s\n\n
+        Top 10 Largest Files:\n%3$s\n\n
+        Top 5 File Frequencies:\n%4$s</string>
 
     <string name="enable_permission">Please enable the permissions from settings.</string>
     <string name="preparing_to_cancel">Preparing to cancel.</string>
