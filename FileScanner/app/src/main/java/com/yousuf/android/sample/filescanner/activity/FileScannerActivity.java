@@ -1,11 +1,16 @@
 package com.yousuf.android.sample.filescanner.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,7 +50,13 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
 
     private ScanResults mScanResults;
 
+    private boolean isPermissionDisplayed;
+
+    //private NotificationManager mNotificationManager;
+
+
     private void initScanResults() {
+        fileScannerBinding.emptyMessage.setVisibility(View.GONE);
         fileScannerBinding.scanResults.setLayoutManager(new LinearLayoutManager(this));
         fileScannerBinding.scanResults.setAdapter(new SectionAdapter());
 
@@ -71,14 +82,20 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         super.onResume();
         showProgress(scanResultsFragment.isRunning());
         if (PermissionsUtil.isPermissionRequired(this)) {
-            showPermissionDialog();
+            if (!isPermissionDisplayed) {
+                showPermissionDialog();
+            }
+        } else {
+            fileScannerBinding.emptyMessage.setVisibility(View.GONE);
         }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null && !scanResultsFragment.isRunning()) {
+        if (savedInstanceState != null
+                && !scanResultsFragment.isRunning()
+                && !PermissionsUtil.isPermissionRequired(this)) {
             mScanResults = savedInstanceState.getParcelable(SCAN_RESULTS_KEY);
             updateScanResults();
         }
@@ -107,16 +124,23 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
     @Override
     public void onBackPressed() {
         scanResultsFragment.cancelFileScan();
-        AppUtils.removeNotification(getApplicationContext(),NOTIFICATION_ID);
+        removeNotification();
         super.onBackPressed();
+    }
+
+    @Override
+    public void onDestroy() {
+        removeNotification();
+        super.onDestroy();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case REQUEST_PERMISSIONS_CODE:
+                isPermissionDisplayed = true;
                 if (grantResults.length <= 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    showMessage(getString(R.string.enable_permission));
+                    showOpenPermissionMessage();
                 }
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -124,8 +148,9 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
     }
 
     public void onStartButtonClicked() {
+        fileScannerBinding.emptyMessage.setVisibility(View.GONE);
         if (PermissionsUtil.isPermissionRequired(this)) {
-            showMessage("Storage Permission required");
+            showOpenPermissionMessage();
         } else {
             startFileScan();
         }
@@ -180,7 +205,6 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         scanResultsFragment.startFileScan();
     }
 
-
     private void showPermissionDialog() {
         if (PermissionsUtil.isRationaleRequired(this)) { // user already denied
             showExplanationDialog();
@@ -201,6 +225,7 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
                     mScanResults.getLargestFilesInfo(),
                     mScanResults.getFrequentExtensionsInfo()));
             updateResultsAdapter();
+            fileScannerBinding.scanResults.setVisibility(View.VISIBLE);
         } else {
             showMessage(getString(R.string.empty_sdcard));
         }
@@ -252,20 +277,50 @@ public class FileScannerActivity extends AppCompatActivity implements ScanResult
         if (showProgress) {
             showOnGoingNotification();
         } else {
-            AppUtils.removeNotification(getApplicationContext(), NOTIFICATION_ID);
+            removeNotification();
         }
+    }
+
+    private void showEmptyMessage() {
+        fileScannerBinding.scanResults.setVisibility(View.GONE);
+        fileScannerBinding.emptyMessage.setVisibility(View.VISIBLE);
     }
 
     private void showMessage(String message) {
         Snackbar.make(fileScannerBinding.mainContainer, message, Snackbar.LENGTH_LONG).show();
     }
 
+    private void showOpenPermissionMessage() {
+        showEmptyMessage();
+        Snackbar snackbar = Snackbar.make(fileScannerBinding.mainContainer, R.string.storage_permission_required, Snackbar.LENGTH_LONG);
+        snackbar.setAction(R.string.open, new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                AppUtils.launchApplicationSettings(FileScannerActivity.this);
+            }
+        });
+        snackbar.setActionTextColor(ContextCompat.getColor(this, R.color.orange));
+        snackbar.show();
+    }
+
+    /**
+     * Displays a non-pending intent Notification.
+     */
     private void showOnGoingNotification() {
-        AppUtils.showOnGoingNotification(getApplicationContext(),
-                getString(R.string.app_name),
-                getString(R.string.file_scan_in_progress),
-                true,
-                NOTIFICATION_ID);
+        Notification notification = (new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.file_scan_in_progress)))
+                .build();
+        notification.flags |= Notification.FLAG_ONGOING_EVENT;
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    private void removeNotification() {
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
 }

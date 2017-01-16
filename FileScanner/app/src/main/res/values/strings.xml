@@ -22,7 +22,9 @@
         Top 5 File Frequencies:\n%4$s</string>
 
     <string name="enable_permission">Please enable the permissions from settings.</string>
+    <string name="storage_permission_required">Storage permissions are required.</string>
     <string name="preparing_to_cancel">Preparing to cancel.</string>
+    <string name="open">Open Settings</string>
     <string name="unable_to_read_external_storage">Unable to read external storage.</string>
 
 </resources>

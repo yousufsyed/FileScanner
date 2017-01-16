@@ -4,7 +4,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 
@@ -87,38 +89,11 @@ public class AppUtils {
         ctx.startActivity(Intent.createChooser(sharingIntent, title));
     }
 
-    /**
-     * Displays a non-pending intent Notification.
-     *
-     * @param ctx     Activity context
-     * @param title   Title text
-     * @param content Content text
-     * @param ongoing ongoing notification
-     * @param id      notification id
-     */
-    public static void showOnGoingNotification(Context ctx, String title, String content, boolean ongoing, int id) {
-        Notification notification = (new NotificationCompat.Builder(ctx)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(title)
-                .setContentText(content)).build();
-        if (ongoing) {
-            notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        }
-
-        NotificationManager mNotificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(id, notification);
-    }
-
-
-    /**
-     * Remove existing notification.
-     *
-     * @param ctx Activity context
-     * @param id  notification id of the notification being removed.
-     */
-    public static void removeNotification(Context ctx, int id) {
-        NotificationManager mNotificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(id);
+    public static void launchApplicationSettings(Context ctx){
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", ctx.getPackageName(), null));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        ctx.startActivity(intent);
     }
 
 }
