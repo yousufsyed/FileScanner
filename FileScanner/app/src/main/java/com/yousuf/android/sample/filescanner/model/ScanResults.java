@@ -90,10 +90,10 @@ public class ScanResults implements Parcelable {
     }
 
     private void saveLargestFilesInfo(PriorityQueue<MFile> fileList) {
-        if (fileList == null || fileList.isEmpty()) {
+        if (fileList == null) {
             return;
         }
-        while (mLargestFiles.size() < LARGEST_FILES_LIMIT) {
+        while (!fileList.isEmpty()) {
             mLargestFiles.add(fileList.poll());
         }
     }
